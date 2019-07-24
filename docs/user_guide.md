@@ -41,6 +41,7 @@ Harbor manages images through projects. Users can be added into one project as a
 
 * **Guest**: Guest has read-only privilege for a specified project.
 * **Developer**: Developer has read and write privileges for a project.
+* **Master**: Master has elevated rights beyond 'Developer' including ability to kick off scannning of images, viewing replication jobs, as well as deletion of images and charts.
 * **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members, starting a vulnerability scan.
 
 Besides the above three roles, there are two system-wide roles:  
