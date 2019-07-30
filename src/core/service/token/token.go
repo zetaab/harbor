@@ -32,7 +32,7 @@ type Handler struct {
 // checkes the permission against local DB and generates jwt token.
 func (h *Handler) Get() {
 	request := h.Ctx.Request
-	log.Debugf("URL for token request: %s", request.URL.String())
+	log.Debugf("URL for token request: %s %+v", request.URL.String(), request.Context())
 	service := h.GetString("service")
 	tokenCreator, ok := creatorMap[service]
 	if !ok {

@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -45,10 +46,11 @@ type onboardReq struct {
 }
 
 type oidcUserData struct {
-	Issuer   string `json:"iss"`
-	Subject  string `json:"sub"`
-	Username string `json:"name"`
-	Email    string `json:"email"`
+	Issuer   string   `json:"iss"`
+	Subject  string   `json:"sub"`
+	Username string   `json:"name"`
+	Email    string   `json:"email"`
+	Groups   []string `json:"groups"`
 }
 
 // Prepare include public code path for call request handler of OIDCController
@@ -138,6 +140,11 @@ func (oc *OIDCController) Callback() {
 			oc.SendInternalServerError(err)
 			return
 		}
+		err = OnBoardOIDCGroups(u, d.Groups)
+		if err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
 		oc.SetSession(userKey, *u)
 		oc.Controller.Redirect("/", http.StatusFound)
 	}
@@ -212,8 +219,30 @@ func (oc *OIDCController) Onboard() {
 	}
 
 	user.OIDCUserMeta = nil
+	err = OnBoardOIDCGroups(&user, d.Groups)
+	if err != nil {
+		oc.SendInternalServerError(err)
+		return
+	}
 	oc.SetSession(userKey, user)
 	oc.DelSession(userInfoKey)
+}
+
+// OnBoardOIDCGroups onboard groups
+func OnBoardOIDCGroups(u *models.User, grps []string) error {
+	log.Errorf("OnBoardOIDCGroups %+v %+v", u, grps)
+	// get or create groups
+	for _, grp := range grps {
+		g := &models.UserGroup{
+			GroupName: grp,
+			GroupType: common.OIDCGroupType,
+		}
+		err := group.OnBoardUserGroup(g)
+		if err != nil {
+			log.Errorf("OnBoardOIDCGroup %v", err)
+		}
+	}
+	return nil
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {

@@ -91,7 +91,7 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 			continue
 		}
 		err = f.filter(ctx, pm, a)
-		log.Debugf("user: %s, access: %v", ctx.GetUsername(), a)
+		log.Debugf("user: %s, access: %+v, obj: %+v", ctx.GetUsername(), a, ctx)
 		if err != nil {
 			return err
 		}
